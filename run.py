@@ -11,8 +11,10 @@ import torch
 from model import ParserModel
 from torch import nn, optim
 from tqdm import tqdm
+
 from utils.featurize import AverageMeter, load_and_preprocess_data, minibatches
 
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def train(parser,
           train_data,
@@ -70,8 +72,8 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func,
                 minibatches(train_data, batch_size)):
             optimizer.zero_grad()
             loss = 0.
-            train_x = torch.from_numpy(train_x).long()
-            train_y = torch.from_numpy(train_y.nonzero()[1]).long()
+            train_x = torch.from_numpy(train_x).long().to(device)
+            train_y = torch.from_numpy(train_y.nonzero()[1]).long().to(device)
 
             logits = parser.model(train_x)
             loss = loss_func(logits, train_y)
@@ -94,7 +96,7 @@ if __name__ == "__main__":
     # debug = True
     debug = False
 
-    assert (torch.__version__ == "1.0.0"), "Please install torch version 1.0.0"
+    # assert (torch.__version__ == "1.0.0"), "Please install torch version 1.0.0"
 
     print(80 * "=")
     print("INITIALIZING")
@@ -103,7 +105,7 @@ if __name__ == "__main__":
         debug)
 
     start = time.time()
-    model = ParserModel(embeddings)
+    model = ParserModel(embeddings).to(device)
     parser.model = model
     print("took {:.2f} seconds\n".format(time.time() - start))
 

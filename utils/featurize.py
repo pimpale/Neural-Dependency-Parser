@@ -315,6 +315,8 @@ class ModelWrapper(object):
         self.sentence_id_to_idx = sentence_id_to_idx
 
     def predict(self, partial_parses):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
         mb_x = [
             self.parser.extract_features(
                 p.stack, p.buffer, p.dependencies,
@@ -322,13 +324,13 @@ class ModelWrapper(object):
             for p in partial_parses
         ]
         mb_x = np.array(mb_x).astype('int32')
-        mb_x = torch.from_numpy(mb_x).long()
+        mb_x = torch.from_numpy(mb_x).long().to(device)
         mb_l = [
             self.parser.legal_labels(p.stack, p.buffer) for p in partial_parses
         ]
 
         pred = self.parser.model(mb_x)
-        pred = pred.detach().numpy()
+        pred = pred.detach().cpu().numpy()
         pred = np.argmax(pred + 10000 * np.array(mb_l).astype('float32'), 1)
         pred = ["S" if p == 2 else ("LA" if p == 0 else "RA") for p in pred]
         return pred

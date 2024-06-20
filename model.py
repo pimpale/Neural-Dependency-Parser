@@ -43,10 +43,8 @@ class ParserModel(nn.Module):
 
         self.embed_to_hidden = nn.Linear(self.n_features * self.embed_size,
                                          self.hidden_size)
-        nn.init.xavier_uniform_(self.embed_to_hidden.weight)
         self.dropout = nn.Dropout(self.dropout_prob)
         self.hidden_to_logits = nn.Linear(self.hidden_size, self.n_classes)
-        nn.init.xavier_uniform_(self.hidden_to_logits.weight)
 
     def embedding_lookup(self, t):
         """ Utilize `self.pretrained_embeddings` to map input `t` from input tokens (integers)
